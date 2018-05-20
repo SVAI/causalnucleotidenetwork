@@ -1,0 +1,11 @@
+# Generic ignores
+*~
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Mac specifics
+.DS_Store
+
