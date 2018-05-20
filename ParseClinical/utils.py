@@ -1,6 +1,8 @@
 from __future__ import print_function, absolute_import, unicode_literals
 from collections import deque
+from itertools import izip
 import glob
+import csv
 import os
 
 
@@ -44,6 +46,42 @@ def find_all_matches(target_dir, filename, glob_pattern=False, abs_path=False, e
     return matches
 
 
+def get_or_default(mapping, key, default_func=lambda: 'UNK'):
+    """Get a key or call a func if not found in dict
+
+    Notes:
+        - UNK = unknown
+    """
+    try:
+        return mapping[key]
+    except KeyError:
+        return default_func()
+
+
+def get_property_names(obj):
+    """Return set of object property name
+
+    Inspiration: https://stackoverflow.com/questions/17735520/determine-if-given-class-attribute-is-a-property-or-not-python-object
+    """
+    props = set()
+    obj_type = type(obj)
+
+    for attr in dir(obj):
+        if isinstance(getattr(obj_type, attr, None), property):
+            props.add(attr)
+
+    return props
+
+
+class make_comparable(object):
+    """Specifies comparison methd"""
+    def __init__(self, eq_func=lambda x, y: x == y):
+        self._compar_eq_func = eq_func
+
+    def __call__(self, func):
+        func.__eq__ = self._compar_eq_func
+
+
 def search_for_key(target_key, mapping, contains=True):
     """Search dictionary for a specific key, optionally pattern match (TBD)
 
@@ -80,6 +118,28 @@ def search_for_key(target_key, mapping, contains=True):
             iterators.pop()
             if not iterators:
                 break
+
+
+def load_patients_from_headers(header_file, locations_file):
+    """expects 1 line of text delimited by '.txt'
+
+    Example:
+        >>> load_patients_from_headers()
+    """
+    with open(header_file, 'r') as f, open(locations_file, 'r') as d:
+        patient_names = f.read()
+        patient_names = patient_names.split('.FPKM.txt')
+        patient_ids = [p.lstrip("KIRP.") for p in patient_names]
+        csvreader = csv.reader(d, delimiter='\t')
+        locations = []
+        for row in csvreader:
+            if row == []:
+                continue
+            x = float(row[0])
+            y = float(row[1])
+            locations.append([x, y])
+
+    return {k: v for k, v in izip(patient_ids, locations)}
 
 
 if __name__ == '__main__':

@@ -7,6 +7,7 @@ Note:
 
 from __future__ import print_function
 from utils import find_all_matches
+from tsv_tools import create_property_tsv
 from Patient import Patient
 import xmltodict
 import argparse
@@ -93,9 +94,7 @@ def main(args):
     valid_raw_xmls = [obj for obj in raw_xml_objs if is_clinical_in_cases(obj, target_cases)]
     patients = [Patient(raw) for raw in valid_raw_xmls]
 
-    print(patients[0].age)
-    print(patients[0].censored)
-    print(patients[0].survival_time)
+    create_property_tsv(patients, tsv_path="Patients_Properties.tsv")
 
 
 if __name__ == '__main__':
